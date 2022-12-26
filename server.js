@@ -9,6 +9,53 @@ app.use(express.json()); //req.body
 
 //ROUTES//
 
+//Login
+app.post("/carrierlogin", async (req, res) => {
+  try {
+    const { username,password } = req.body;
+    console.log(username)
+    console.log(password)
+    const allTodos = await pool.query("select username,password from userinfo where username=$1 and password= $2",[username,password]);
+    // console.log(allTodos)
+    if(allTodos.rowCount>0){
+    res.json('LOGGEDIN');
+  }
+  else{
+    res.json('INCORRECT USERNAME AND PASSWORD');
+  }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+
+
+//Carrier Sign up
+// app.post("/carriersignup", async (req, res) => {
+//   try {
+//     const {fullname,companyname,username,password} = req.body;
+//     const checkusername = await pool.query(
+//     "select username from userinfo where username=$1"
+//       [username]
+//     );
+//     if(checkusername.rowCount===0){
+//     const carriersignup = await pool.query(
+//       "INSERT INTO carrier (fullname,companyname,password,username) VALUES($1,$2,$3,$4) RETURNING *",
+//       [fullname,companyname,username,password,]
+//     );
+//     res.json("Sign up successful");
+//   }
+//   else{
+//     res.json("Username already exist");
+//   }
+
+    
+//   } catch (err) {
+//     console.error(err.message);
+//   }
+// });
+
+
 //loaddetaisl
 app.post("/loaddetails", async (req, res) => {
   try {
