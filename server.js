@@ -59,10 +59,10 @@ app.post("/carrierlogin", async (req, res) => {
 //loaddetaisl
 app.post("/loaddetails", async (req, res) => {
   try {
-    const { loadid,pickup,dropoff,rate,booked,weight,equipmenttype,pickupdate,dropoffdate } = req.body;
+    const { loadid,pickup,dropoff,rate,weight,equipmenttype,pickupdate,dropoffdate } = req.body;
     const loaddetainfo = await pool.query(
     "INSERT INTO loaddetails (pickup,dropoff,rate,booked,weight,equipmenttype,pickupdate,dropoffdate) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
-    [pickup,dropoff,rate,booked,weight,equipmenttype,pickupdate,dropoffdate] 
+    [pickup,dropoff,rate,false,weight,equipmenttype,pickupdate,dropoffdate] 
     );
   
     res.json("Load posted successfully");
@@ -71,26 +71,55 @@ app.post("/loaddetails", async (req, res) => {
       console.error(err.message);
     }
   });
+//loaddetaisl
+app.get("/loaddetails", async (req, res) => {
+  try {const loaddetainfo = await pool.query("select * from loaddetails where booked=$1",[false]);
+    res.json(loaddetainfo.rows);
+    }
+    catch (err) {
+      console.error(err.message);
+    }
+  });
+//loaddetaisl
+app.post("/loaddetailsbyid", async (req, res) => {
+  const { loadid } = req.body;
+  try {const loaddetainfo = await pool.query("select * from loaddetails where loadid=$1",[loadid]);
+    res.json(loaddetainfo.rows);
+    }
+    catch (err) {
+      console.error(err.message);
+    }
+  });
 
-
+  //loaddetaisl
+app.post("/loaddetailsbook", async (req, res) => {
+  const { loadid } = req.body;
+  try {const loaddetainfo = await pool.query("update loaddetails set booked=$1 where loadid=$2",[true,loadid]);
+    res.json("Booked Successfully");
+    }
+    catch (err) {
+      console.error(err.message);
+    }
+  });
 //Signup
 
 app.post("/signup", async (req, res) => {
   try {
-    const { name,username,password } = req.body;
+    console.log(req)
+    const { fullname,username,password,companyname } = req.body;
     const checkusername = await pool.query(
-      "select username from userinfo where username=$1",
+      "select username from carriersignup where username=$1",
       [username]
     );
     if(checkusername.rowCount==0){
     const signupinfo = await pool.query(
-      "INSERT INTO userinfo (name,password,username) VALUES($1,$2,$3) RETURNING *",
-      [name,password,username]
+      "INSERT INTO carriersignup (fullname,companyname,username,password) VALUES($1,$2,$3,$4) RETURNING *",
+      [fullname,companyname,username,password]
     );
-    res.json("Sign up successful");
+    res.json("Sucess");
   }
   else{
-    res.json("Username already exist");
+    res.json("Already Exist");
   }
 
     
@@ -116,13 +145,13 @@ app.post("/login", async (req, res) => {
     const { username,password } = req.body;
     console.log(username)
     console.log(password)
-    const allTodos = await pool.query("select username,password from userinfo where username=$1 and password= $2",[username,password]);
+    const allTodos = await pool.query("select username,password from carriersignup where username=$1 and password= $2",[username,password]);
     // console.log(allTodos)
     if(allTodos.rowCount>0){
-    res.json('LOGGEDIN');
+    res.json('Successfully Logged In');
   }
   else{
-    res.json('INCORRECT USERNAME AND PASSWORD');
+    res.json('Incorrect Username or Password');
   }
   } catch (err) {
     console.error(err.message);
